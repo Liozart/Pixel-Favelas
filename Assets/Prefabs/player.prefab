@@ -102,7 +102,7 @@ MonoBehaviour:
   posX: 0
   posY: 0
   entityName: "Josu\xE9"
-  entityDesc: It's you.
+  entityDesc: C'est toi.
   entityType: 0
   selectionColor: {r: 0.5660378, g: 0.39195445, b: 0.39195445, a: 0}
   textEventGen: {fileID: 0}
@@ -112,10 +112,14 @@ MonoBehaviour:
   moveSpeed: 0
   actionPoints: 100
   maxActionPoints: 0
+  minActionCost: 0
+  isTurnFinished: 0
   actorType: 0
   turnManager: {fileID: 0}
   mapGenerator: {fileID: 0}
   audioSource: {fileID: 0}
+  attackSound: {fileID: 0}
+  deathSound: {fileID: 0}
   playerType: 0
   playerSpriteBase: {fileID: 21300000, guid: a5d72e778d9d06d4493d1df46a812821, type: 3}
   audioClip_openDoor: {fileID: 0}
@@ -123,11 +127,13 @@ MonoBehaviour:
   audioClip_getKey: {fileID: 0}
   audioClip_getLoot: {fileID: 0}
   inventory: []
+  selectedObject: {fileID: 0}
   delayBeforeAutoThresold: 1
   healthText: {fileID: 0}
   speedText: {fileID: 0}
   APText: {fileID: 0}
   Equipped1: {fileID: 0}
+  Equipped2: {fileID: 0}
 --- !u!65 &-7916438499145771538
 BoxCollider:
   m_ObjectHideFlags: 0

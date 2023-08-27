@@ -10,14 +10,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4814485458757960947}
   - component: {fileID: 7801116559661172676}
-  - component: {fileID: 8443469877519221289}
   - component: {fileID: -967957278649518375}
+  - component: {fileID: -5577599201052877325}
   m_Layer: 6
   m_Name: brick
   m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4814485458757960947
 Transform:
@@ -86,19 +86,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!65 &8443469877519221289
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3138959003426567357}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.32, y: 0.32, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-967957278649518375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,9 +101,22 @@ MonoBehaviour:
   posX: 0
   posY: 0
   entityName: Brick
-  entityDesc: A wall of bricks.
+  entityDesc: Un mur.
   entityType: 0
   selectionColor: {r: 0, g: 0, b: 0, a: 0}
   textEventGen: {fileID: 0}
   isDestroyed: 0
   blockType: 1
+--- !u!135 &-5577599201052877325
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3138959003426567357}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.15
+  m_Center: {x: 0, y: 0, z: 0}

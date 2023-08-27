@@ -17,7 +17,7 @@ GameObject:
   m_TagString: Floor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1086835178281124502
 Transform:
@@ -114,7 +114,7 @@ MonoBehaviour:
   posX: 0
   posY: 0
   entityName: Asphalt
-  entityDesc: The floor.
+  entityDesc: Le sol.
   entityType: 0
   selectionColor: {r: 0, g: 0, b: 0, a: 0}
   textEventGen: {fileID: 0}

@@ -114,7 +114,7 @@ MonoBehaviour:
   posX: 0
   posY: 0
   entityName: Door
-  entityDesc: A door.
+  entityDesc: Une porte.
   entityType: 0
   selectionColor: {r: 0, g: 0, b: 0, a: 0}
   textEventGen: {fileID: 0}

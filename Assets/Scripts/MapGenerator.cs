@@ -37,14 +37,9 @@ public class MapGenerator : MonoBehaviour
     //Lists of generated gameobjects
     List<GameObject> gameobjectTilesFloors = new List<GameObject>();
     List<GameObject> gameobjectTilesWalls = new List<GameObject>();
-    public GameObject mainPlayerGameobject = null;
-    GameObject gameobjectTileTrapdoor = null;
-    List<GameObject> gameobjectTilesMobs = new List<GameObject>();
-    List<GameObject> gameobjectTilesItems = new List<GameObject>();
-    List<GameObject> gameobjectTilesDoors = new List<GameObject>();
-    List<GameObject> gameobjectTilesTables = new List<GameObject>();
 
     //List of the spawned entities
+    public GameObject mainPlayerGameobject = null;
     public List<Actor> currentActors = new List<Actor>();
     public List<Item> currentItems = new List<Item>();
 
@@ -87,11 +82,17 @@ public class MapGenerator : MonoBehaviour
         pathFindGrid = new NesScripts.Controls.PathFind.Grid(tilesmap);
         #endregion
 
-        AddTilePlayer();
-        AddTileEnemy1();
-        AddTileEnemy1();
-        AddTileEnemy1();
-        AddTileEnemy1();
+        GameObject pos = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
+        while (GetEntitiesAt(pos.transform.position).Count > 1)
+            pos = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
+
+        mainPlayerGameobject = Instantiate(PrefabPlayer, pos.transform.position, Quaternion.identity, currentMap.transform);
+        currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
+
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
     }
 
     public void AddTile(int x, int y, MapTileTypes tiletype)
@@ -109,21 +110,22 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    void AddTilePlayer()
+    public void AddRandomOnFloor(GameObject gameobj, EntityType typ)
     {
-        mainPlayerGameobject = Instantiate(PrefabPlayer, new Vector3((minX + 1) * GRID_SIZE, (minY + 1) * GRID_SIZE, 0),
-            Quaternion.identity, currentMap.transform);
-        currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
-    }
+        GameObject pos = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
+        while (GetEntitiesAt(pos.transform.position).Count > 1)
+            pos = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
 
-    void AddTileEnemy1()
-    {
-        GameObject g = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
-        while(GetEntitiesAt(g.transform.position).Count > 1)
-            g = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
-        gameobjectTilesMobs.Add(Instantiate(PrefabEnemy_1, g.transform.position,
-            Quaternion.identity, currentMap.transform));
-        currentActors.Add(gameobjectTilesMobs.Last().GetComponent<Actor>());
+        GameObject g = Instantiate(gameobj, pos.transform.position, Quaternion.identity, currentMap.transform);
+        switch (typ)
+        {
+            case EntityType.Actor:
+                currentActors.Add(g.GetComponent<Actor>());
+                break;
+            case EntityType.Item:
+                currentItems.Add(g.GetComponent<Item>());
+                break;
+        }    
     }
 
     public List<Entity> GetEntitiesAt(Vector3 where)
@@ -215,7 +217,7 @@ public class MapGenerator : MonoBehaviour
     //Set the trapdoor sprite open
     public void SetTrapDoorOpen()
     {
-        gameobjectTileTrapdoor.GetComponent<SpriteRenderer>().sprite = PrefabTrapdoor_open.GetComponent<SpriteRenderer>().sprite;
+        //gameobjectTileTrapdoor.GetComponent<SpriteRenderer>().sprite = PrefabTrapdoor_open.GetComponent<SpriteRenderer>().sprite;
     }
 
     //Clear all the variables used to generate the map
@@ -227,11 +229,7 @@ public class MapGenerator : MonoBehaviour
         JSONMap = null;
         gameobjectTilesFloors = new List<GameObject>();
         gameobjectTilesWalls = new List<GameObject>();
-        mainPlayerGameobject = gameobjectTileTrapdoor = null;
-        gameobjectTilesMobs = new List<GameObject>();
-        gameobjectTilesItems = new List<GameObject>();
-        gameobjectTilesDoors = new List<GameObject>();
-        gameobjectTilesTables = new List<GameObject>();
+        mainPlayerGameobject = null;
         currentActors = new List<Actor>();
         currentItems = new List<Item>();
     }

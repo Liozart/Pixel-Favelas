@@ -271,14 +271,9 @@ public class Player : Actor
             case "Item":
                 other.gameObject.GetComponent<Item>().Loot(this);
                 inventory.Add(other.gameObject.GetComponent<Item>());
-                other.gameObject.transform.parent = transform;
                 break;
-
-
-
-
             //Open the door
-            case "Door":
+            /*case "Door":
                 //Play sound
                 audioSource.clip = audioClip_openDoor;
                 audioSource.Play();
@@ -301,7 +296,7 @@ public class Player : Actor
                         turnManager.GoToNextLevel();
                     }
                 }
-                break;
+                break;*/
         }
         RefreshUI();
     }

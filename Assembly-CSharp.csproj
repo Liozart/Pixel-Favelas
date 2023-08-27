@@ -56,11 +56,13 @@
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Base\Melee.cs" />
     <Compile Include="Assets\Scripts\TurnManager.cs" />
     <Compile Include="Assets\Scripts\Base\Actor.cs" />
     <Compile Include="Assets\Scripts\TextEventGeneration.cs" />
     <Compile Include="Assets\Scripts\Base\Entity.cs" />
     <Compile Include="Assets\Scripts\LevelCreator.cs" />
+    <Compile Include="Assets\Scripts\Items\Shiv.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\Node.cs" />
     <Compile Include="Assets\Scripts\Base\Item.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\Grid.cs" />
@@ -69,13 +71,11 @@
     <Compile Include="Assets\Scripts\Items\Makarov.cs" />
     <Compile Include="Assets\Scripts\MapGenerator.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\Point.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Enemy1.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\PathFinding.cs" />
     <Compile Include="Assets\Scripts\Base\Player.cs" />
-    <Compile Include="Assets\Scripts\Base\Block.cs" />
     <Compile Include="Assets\Scripts\Base\Enemy.cs" />
-    <Compile Include="Assets\Scripts\Enemies\Enemy1.cs" />
-    <Compile Include="Assets\Scripts\Base\Melee.cs" />
-    <Compile Include="Assets\Scripts\Items\Shiv.cs" />
+    <Compile Include="Assets\Scripts\Base\Block.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
