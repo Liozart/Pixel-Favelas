@@ -131,9 +131,9 @@ MonoBehaviour:
   turnManager: {fileID: 0}
   mapGenerator: {fileID: 0}
   audioSource: {fileID: 0}
-  attackSound: {fileID: 8300000, guid: 007cecda8402c3445a4356b62085a084, type: 3}
+  attackSound: {fileID: 8300000, guid: 6d26788394bf6f34ba4a23aac5a57f74, type: 3}
   deathSound: {fileID: 8300000, guid: 8b51e9b29d0135c44a3cc45c42e9b0f0, type: 3}
-  minDamage: 0
+  minDamage: 1
   maxDamage: 2
   range: 3
   vision: 5

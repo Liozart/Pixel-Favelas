@@ -18,12 +18,18 @@ public class Actor : Entity
     public int actionPoints;
     public int maxActionPoints;
     public int minActionCost;
+    [HideInInspector]
     public bool isTurnFinished;
+    [HideInInspector]
     public TurnAction waitingAction;
+    [HideInInspector]
     public ActorType actorType;
 
+    [HideInInspector]
     public TurnManager turnManager;
+    [HideInInspector]
     public MapGenerator mapGenerator;
+    [HideInInspector]
     public AudioSource audioSource;
 
     public AudioClip attackSound;

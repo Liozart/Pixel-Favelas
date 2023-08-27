@@ -3,13 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Transactions;
 using TMPro;
-using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Animations;
 using UnityEngine.UIElements;
 
 public enum PlayerClass
@@ -47,6 +42,7 @@ public class Player : Actor
     public TMP_Text speedText;
     public TMP_Text APText;
     public GameObject Equipped1;
+    public GameObject Equipped2;
 
     // Start is called before the first frame update
     void Start()
@@ -74,9 +70,12 @@ public class Player : Actor
         speedText = GameObject.Find("SpeedText").GetComponent<TMP_Text>();
         APText = GameObject.Find("APText").GetComponent<TMP_Text>();
         Equipped1 = GameObject.Find("Equipped1");
+        Equipped1 = GameObject.Find("Equipped2");
 
-        inventory.Add(Instantiate(mapGenerator.PrefabMakarov, transform).GetComponent<Item>());
+        inventory.Add(Instantiate(mapGenerator.PrefabMakarov).GetComponent<Item>());
         inventory[0].Loot(this);
+        inventory.Add(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
+        inventory[1].Loot(this);
 
         RefreshUI();
     }
@@ -113,28 +112,51 @@ public class Player : Actor
         if (Input.GetMouseButtonDown((int)MouseButton.RightMouse))
         {
             //Add selected action
-            if (selectedObject != null) switch (selectedObject.tag)
+            if (selectedObject != null)
             {
-                case "Floor":
-                case "Trapdoor":
-                case "Door":
-                case "Item":
-                        if (selectedObject.transform.position == transform.position)
-                            this.waitingAction = new TurnAction(Wait, actionPoints);
-                        else
-                        {
-                            if (moveSpeed <= actionPoints)
-                                this.waitingAction = new TurnAction(MoveToSelection, moveSpeed);
+                switch (selectedObject.tag)
+                {
+                    case "Floor":
+                    case "Trapdoor":
+                    case "Door":
+                    case "Item":
+                            if (selectedObject.transform.position == transform.position)
+                                this.waitingAction = new TurnAction(Wait, actionPoints);
                             else
-                                textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
-                        }
-                        break;
-                    case "Enemy":
-                        if (((Gun)inventory[0]).APCost <= actionPoints)
-                            this.waitingAction = new TurnAction(((Gun)inventory[0]).Shoot, ((Gun)inventory[0]).APCost);
-                        else
-                            textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
-                        break;
+                            {
+                                Actor n = CheckNextTile();
+                                if (n != null)
+                                {
+                                        textEventGen.AddTextEvent("Bloqué!", EventTextType.Skill);
+                                        return;
+                                }
+                                else
+                                {
+                                    if (moveSpeed <= actionPoints)
+                                        this.waitingAction = new TurnAction(Move, moveSpeed);
+                                    else
+                                        textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                                }
+                            }
+                            break;
+                        case "Enemy":
+                            Actor m = CheckNextTile();
+                            if (m != null)
+                            {
+                                if (((Melee)inventory[1]).APCost <= actionPoints)
+                                    this.waitingAction = new TurnAction(((Melee)inventory[1]).Paquis, ((Melee)inventory[1]).APCost);
+                                else
+                                    textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                            }
+                            else
+                            {
+                                if (((Gun)inventory[0]).APCost <= actionPoints)
+                                    this.waitingAction = new TurnAction(((Gun)inventory[0]).Shoot, ((Gun)inventory[0]).APCost);
+                                else
+                                    textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                            }
+                            break;
+                }
             }
             else
             {
@@ -148,7 +170,7 @@ public class Player : Actor
         }
 
         //Auto turn
-        if (Input.GetMouseButton((int)MouseButton.RightMouse))
+        /*if (Input.GetMouseButton((int)MouseButton.RightMouse))
             if (delayBeforeAuto < delayBeforeAutoThresold)
                 delayBeforeAuto += Time.deltaTime;
             else
@@ -159,8 +181,19 @@ public class Player : Actor
                         case "Trapdoor":
                         case "Door":
                         case "Item":
-                            if (moveSpeed <= actionPoints)
-                                this.waitingAction = new TurnAction(MoveToSelection, moveSpeed);
+                            if (selectedObject.transform.position == transform.position)
+                                this.waitingAction = new TurnAction(Wait, actionPoints);
+                            else
+                            {
+                                if (moveSpeed <= actionPoints)
+                                    this.waitingAction = new TurnAction(Move, moveSpeed);
+                                else
+                                    textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                            }
+                            break;
+                        case "Enemy":
+                            if (((Gun)inventory[0]).APCost <= actionPoints)
+                                this.waitingAction = new TurnAction(((Gun)inventory[0]).Shoot, ((Gun)inventory[0]).APCost);
                             else
                                 textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
                             break;
@@ -171,7 +204,7 @@ public class Player : Actor
                 delayBeforeAuto = 0;
             }
         else
-            delayBeforeAuto = 0;
+            delayBeforeAuto = 0;*/
 
         //Zoom
         if (Input.mouseScrollDelta.y > 0)
@@ -202,8 +235,35 @@ public class Player : Actor
             Equipped1.SetActive(true);
     }
 
+    public void RefreshMinActionCost()
+    {
+        minActionCost = inventory.OrderBy(i => i.APCost).First().APCost;
+    }
+
+    public Actor CheckNextTile()
+    {
+        //Get player tile pos
+        int px = (int)Math.Round(transform.position.x / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minX);
+        int py = (int)Math.Round(transform.position.y / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minY);
+        //Get selected object tile pos
+        int tx = (int)Math.Round(selectedObject.transform.position.x / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minX);
+        int ty = (int)Math.Round(selectedObject.transform.position.y / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minY);
+        //Get path to target tile
+        List<Point> tpath = Pathfinding.FindPath(this.mapGenerator.pathFindGrid,
+            new Point(px, py), new Point(tx, ty));
+
+        //Check if someone is in the way switch to melee
+        foreach (Entity t in mapGenerator.GetEntitiesAt(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
+            (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0)))
+        {
+            if (t.entityType == EntityType.Actor)
+                return (Actor)t;
+        }
+        return null;
+    }
+
     //Player collides with something
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter(Collider other)
     {
         switch (other.transform.tag)
         {
@@ -251,7 +311,7 @@ public class Player : Actor
         textEventGen.AddTextEvent("Attente", EventTextType.Normal);
     }
 
-    void MoveToSelection()
+    void Move()
     {
         //Get player tile pos
         int px = (int)Math.Round(transform.position.x / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minX);
@@ -262,15 +322,16 @@ public class Player : Actor
         //Get path to target tile
         List<Point> tpath = Pathfinding.FindPath(this.mapGenerator.pathFindGrid,
             new Point(px, py), new Point(tx, ty));
-        //Move toward the first point of the list
-        StartCoroutine(MoveToPosition(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
-            (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0), 0.2f));
-        //Unselect tile if destination
+
         if (tpath.Count == 1)
         {
+            //Unselect tile if at destination
             selectedObject.GetComponent<Entity>().UnSelect();
             selectedObject = null;
         }
+        //Move toward the first point of the list
+        StartCoroutine(MoveToPosition(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
+            (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0), 0.2f));
     }
 
     public IEnumerator MoveToPosition(Vector3 end, float timeToGo)

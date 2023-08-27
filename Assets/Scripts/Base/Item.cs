@@ -4,15 +4,19 @@ using UnityEngine;
 
 public enum ItemTypes
 {
-    Key, Gun, Armor, Grenade, Aid, Gadget
+    Key, Gun, Melee, Armor, Grenade, Aid, Gadget
 }
 
 public class Item : Entity
 {
+    [HideInInspector]
     public ItemTypes itemType;
+    [HideInInspector]
     public AudioSource audioSource;
     public AudioClip lootedClip;
-    public Player owner;
+    public AudioClip droppedClip;
+    public AudioClip useSound;
+    public Actor owner;
     public int APCost;
 
     public void Awake()
@@ -23,18 +27,27 @@ public class Item : Entity
         audioSource = gameObject.AddComponent<AudioSource>();
     }
 
-    public void Loot(Player e)
+    public void Loot(Actor e)
     {
+        transform.parent = e.transform;
         owner = e;
-        if (e.minActionCost > APCost)
-            e.minActionCost = APCost;
         audioSource.clip = lootedClip;
         audioSource.Play();
+        GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<Collider>().enabled = false;
+        if (e.actorType == ActorType.Player)
+            ((Player)owner).RefreshMinActionCost();
     }
 
     public void Drop()
     {
-        //TODO : CHANGER OWNER MINACTIONCOST
+        transform.parent = null;
+        audioSource.clip = droppedClip;
+        audioSource.Play();
+        GetComponent<SpriteRenderer>().enabled = true;
+        GetComponent<Collider>().enabled = true;
+        if (owner.actorType == ActorType.Player)
+            ((Player)owner).RefreshMinActionCost();
         owner = null;
     }
 }

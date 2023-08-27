@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Runtime.ExceptionServices;
-using System.Xml.Serialization;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.Windows;
-using UnityEngine.WSA;
 
 //Types of map tiles
 public enum MapTileTypes
@@ -37,7 +29,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject PrefabEnemy_1;
     //Items prefabs
     public GameObject PrefabMakarov;
-    public GameObject PrefabItem_key;
+    public GameObject PrefabShiv;
 
     //JSON data of the map
     GeneratedMapJSONContent JSONMap;
@@ -96,6 +88,7 @@ public class MapGenerator : MonoBehaviour
         #endregion
 
         AddTilePlayer();
+        AddTileEnemy1();
         AddTileEnemy1();
         AddTileEnemy1();
         AddTileEnemy1();

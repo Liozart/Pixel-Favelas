@@ -74,6 +74,8 @@
     <Compile Include="Assets\Scripts\Base\Block.cs" />
     <Compile Include="Assets\Scripts\Base\Enemy.cs" />
     <Compile Include="Assets\Scripts\Enemies\Enemy1.cs" />
+    <Compile Include="Assets\Scripts\Base\Melee.cs" />
+    <Compile Include="Assets\Scripts\Items\Shiv.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

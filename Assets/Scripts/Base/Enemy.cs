@@ -16,6 +16,11 @@ public class Enemy : Actor
     public int vision;
     public EnemyTypes enemyType;
 
+    public void Start()
+    {
+        this.actorType = ActorType.Enemy;
+    }
+
     public void Say()
     {
         this.textEventGen.AddTextEvent("Isso é chato", EventTextType.Combat);

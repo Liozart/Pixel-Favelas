@@ -121,9 +121,16 @@ MonoBehaviour:
   itemType: 1
   audioSource: {fileID: 0}
   lootedClip: {fileID: 0}
+  droppedClip: {fileID: 0}
   owner: {fileID: 0}
   APCost: 50
   MaxRange: 5
   MinDamage: 1
-  MaxDamage: 3
-  ShootSound: {fileID: 8300000, guid: fc6bd08dfdceea24f8d10dda4206294e, type: 3}
+  MaxDamage: 2
+  ammoCapacity: 8
+  currentAmmo: 8
+  ShootSound:
+  - {fileID: 8300000, guid: 40e82d1a73be24a4b93394d992d743f3, type: 3}
+  - {fileID: 8300000, guid: 1d863264a146ffe429de098c94efe7e8, type: 3}
+  - {fileID: 8300000, guid: b4e4083dfcd128345afd4399eddc3b21, type: 3}
+  reloadSound: {fileID: 8300000, guid: 3908f75378ececc4a8ce7600096a9e2d, type: 3}

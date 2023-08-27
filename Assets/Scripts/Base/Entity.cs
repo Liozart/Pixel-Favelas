@@ -11,13 +11,18 @@ public enum EntityType
 
 public class Entity : MonoBehaviour
 {
-    public int posX; 
+    [HideInInspector]
+    public int posX;
+    [HideInInspector]
     public int posY;
     public string entityName;
     public string entityDesc;
+    [HideInInspector]
     public EntityType entityType;
 
+    [HideInInspector]
     public Color selectionColor;
+    [HideInInspector]
     public TextEventGeneration textEventGen;
 
     public void Select()
