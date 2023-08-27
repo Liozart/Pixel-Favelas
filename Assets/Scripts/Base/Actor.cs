@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum ActorType
@@ -16,7 +17,9 @@ public class Actor : Entity
     public int moveSpeed;
     public int actionPoints;
     public int maxActionPoints;
-    public List<TurnAction> waitingActionsList = new List<TurnAction>();
+    public int minActionCost;
+    public bool isTurnFinished;
+    public TurnAction waitingAction;
     public ActorType actorType;
 
     public TurnManager turnManager;
@@ -34,22 +37,27 @@ public class Actor : Entity
         turnManager = GameObject.Find("Turn Manager").GetComponent<TurnManager>();
         audioSource = GetComponent<AudioSource>();
         this.selectionColor = Color.red;
+        isTurnFinished = false;
     }
 
     //Do entity action
     public void ResolveTurn()
     {
-        List<TurnAction> tmp = waitingActionsList;
-        for (int i = 0; i < tmp.Count; i++)
+        if (isTurnFinished) return;
+
+        if ((actionPoints - waitingAction.AP) >= 0)
         {
-            if ((actionPoints - tmp[i].AP) >= 0)
-            {
-                actionPoints -= tmp[i].AP;
-                tmp[i].action();
-                waitingActionsList.RemoveAt(i);
-            }
-            else break;
+            actionPoints -= waitingAction.AP;
+            waitingAction.action();
+            waitingAction = null;
         }
+        else isTurnFinished = true;
+
+        if (minActionCost > actionPoints)
+            isTurnFinished = true;
+        else return;
+
+        turnManager.Resolve();
     }
 }
 

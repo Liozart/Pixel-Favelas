@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class PlayerState
@@ -16,6 +17,7 @@ public class TurnManager : MonoBehaviour
 
     int currentLevel = 0;
     int currentTurn = 0;
+    public TMP_Text turnText;
 
     PlayerState playerState;
 
@@ -26,6 +28,8 @@ public class TurnManager : MonoBehaviour
         mapGenerator.GenerateTestLevel();
 
         playerState = new PlayerState();
+        currentTurn = currentLevel = 1;
+        
     }
     
     //Called when the player got the key and is on the trapdoor
@@ -33,7 +37,7 @@ public class TurnManager : MonoBehaviour
     {
         currentLevel++;
         mapGenerator.ClearCurrentMap();
-        mapGenerator.GenerateLevel(currentLevel);
+        //mapGenerator.GenerateLevel(currentLevel);
     }
 
     //Save player state between levels
@@ -47,20 +51,27 @@ public class TurnManager : MonoBehaviour
     public void Resolve()
     {
         //Sort actors by speed
-        mapGenerator.currentActors = mapGenerator.currentActors.OrderBy(e => e.initiative).ToList();
+        mapGenerator.currentActors = mapGenerator.currentActors.OrderByDescending(e => e.initiative).ToList();
+        Actor nextPlayer = mapGenerator.currentActors.FirstOrDefault(e => !e.isTurnFinished);
+        if (nextPlayer)
+            nextPlayer.ResolveTurn();
+        else
+        {
+            EndTurn();
+        }
+    }
 
-        //Foreach actor on the map, resolve actions
-        foreach (Actor g in mapGenerator.currentActors)
-            g.ResolveTurn();
-
+    public void EndTurn()
+    {
         //Restore actors AP
         foreach (Actor g in mapGenerator.currentActors)
         {
             g.actionPoints += g.maxActionPoints;
             if (g.actionPoints > g.maxActionPoints)
                 g.actionPoints = g.maxActionPoints;
+            g.isTurnFinished = false;
         }
-
         currentTurn++;
+        turnText.text = "Turn : " + currentTurn.ToString();
     }
 }

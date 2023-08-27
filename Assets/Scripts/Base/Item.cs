@@ -13,6 +13,7 @@ public class Item : Entity
     public AudioSource audioSource;
     public AudioClip lootedClip;
     public Player owner;
+    public int APCost;
 
     public void Awake()
     {
@@ -25,7 +26,15 @@ public class Item : Entity
     public void Loot(Player e)
     {
         owner = e;
+        if (e.minActionCost > APCost)
+            e.minActionCost = APCost;
         audioSource.clip = lootedClip;
         audioSource.Play();
+    }
+
+    public void Drop()
+    {
+        //TODO : CHANGER OWNER MINACTIONCOST
+        owner = null;
     }
 }

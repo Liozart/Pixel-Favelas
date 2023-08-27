@@ -41,7 +41,7 @@ public class LevelCreator : MonoBehaviour
         using (StreamWriter r = new StreamWriter(path))
         {
             r.Write(rjson);
-            Debug.Log("OK");
+            Debug.Log("Level created.");
         }
     }
 }

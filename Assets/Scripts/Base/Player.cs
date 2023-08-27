@@ -25,6 +25,7 @@ public class Player : Actor
 
     //Camera
     GameObject playerCamera;
+    int zoomLevel = 3;
 
     //Audio
     public AudioClip audioClip_openDoor;
@@ -57,6 +58,7 @@ public class Player : Actor
         this.initiative = 10;
         this.moveSpeed = 100;
         this.actionPoints = this.maxActionPoints = 100;
+        this.minActionCost = moveSpeed;
         this.actorType = ActorType.Player;
         switch (playerType)
         {
@@ -97,6 +99,7 @@ public class Player : Actor
                         isSame = true;
                     selectedObject.GetComponent<Entity>().UnSelect();
                     selectedObject = null;
+                    waitingAction = null;
 
                 }
                 if (!isSame)
@@ -115,14 +118,32 @@ public class Player : Actor
                 case "Floor":
                 case "Trapdoor":
                 case "Door":
-                case "Item": 
-                        this.waitingActionsList.Add(new TurnAction(MoveToSelection, moveSpeed)); break;
-                case "Enemy":
-                        this.waitingActionsList.Add(new TurnAction(((Gun)inventory[0]).Shoot, ((Gun)inventory[0]).APCost));
+                case "Item":
+                        if (selectedObject.transform.position == transform.position)
+                            this.waitingAction = new TurnAction(Wait, actionPoints);
+                        else
+                        {
+                            if (moveSpeed <= actionPoints)
+                                this.waitingAction = new TurnAction(MoveToSelection, moveSpeed);
+                            else
+                                textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                        }
+                        break;
+                    case "Enemy":
+                        if (((Gun)inventory[0]).APCost <= actionPoints)
+                            this.waitingAction = new TurnAction(((Gun)inventory[0]).Shoot, ((Gun)inventory[0]).APCost);
+                        else
+                            textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
                         break;
             }
+            else
+            {
+                //Wait
+                this.waitingAction = new TurnAction(Wait, actionPoints);
+            }
             //Finish the turn
-            this.turnManager.Resolve();
+            if (waitingAction != null)
+                this.turnManager.Resolve();
             RefreshUI();
         }
 
@@ -137,7 +158,12 @@ public class Player : Actor
                         case "Floor":
                         case "Trapdoor":
                         case "Door":
-                        case "Item": this.waitingActionsList.Add(new TurnAction(MoveToSelection, moveSpeed)); break;
+                        case "Item":
+                            if (moveSpeed <= actionPoints)
+                                this.waitingAction = new TurnAction(MoveToSelection, moveSpeed);
+                            else
+                                textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                            break;
                     }
                 //Finish the turn
                 this.turnManager.Resolve();
@@ -146,6 +172,18 @@ public class Player : Actor
             }
         else
             delayBeforeAuto = 0;
+
+        //Zoom
+        if (Input.mouseScrollDelta.y > 0)
+        {
+            zoomLevel--; 
+            playerCamera.transform.position = new Vector3(playerCamera.transform.position.x, playerCamera.transform.position.y, playerCamera.transform.position.z - 1);
+        }
+        else if (Input.mouseScrollDelta.y < 0)
+        {
+            zoomLevel++; 
+            playerCamera.transform.position = new Vector3(playerCamera.transform.position.x, playerCamera.transform.position.y, playerCamera.transform.position.z + 1);
+        }
     }
 
     public void RefreshUI()
@@ -208,6 +246,11 @@ public class Player : Actor
         RefreshUI();
     }
 
+    public void Wait()
+    {
+        textEventGen.AddTextEvent("Attente", EventTextType.Normal);
+    }
+
     void MoveToSelection()
     {
         //Get player tile pos
@@ -239,10 +282,10 @@ public class Player : Actor
             t += Time.deltaTime / timeToGo;
             transform.position = Vector3.Lerp(startRotation, end, t);
             //Center camera on player
-            playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, 3);
+            playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, zoomLevel);
             yield return null;
         }
         transform.position = end;
-        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, 3);
+        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, zoomLevel);
     }
 }

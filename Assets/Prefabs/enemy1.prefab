@@ -125,6 +125,8 @@ MonoBehaviour:
   moveSpeed: 100
   actionPoints: 100
   maxActionPoints: 100
+  minActionCost: 100
+  isTurnFinished: 0
   actorType: 1
   turnManager: {fileID: 0}
   mapGenerator: {fileID: 0}

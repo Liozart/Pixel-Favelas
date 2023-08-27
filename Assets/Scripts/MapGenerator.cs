@@ -97,6 +97,8 @@ public class MapGenerator : MonoBehaviour
 
         AddTilePlayer();
         AddTileEnemy1();
+        AddTileEnemy1();
+        AddTileEnemy1();
     }
 
     public void AddTile(int x, int y, MapTileTypes tiletype)
@@ -123,7 +125,10 @@ public class MapGenerator : MonoBehaviour
 
     void AddTileEnemy1()
     {
-        gameobjectTilesMobs.Add(Instantiate(PrefabEnemy_1, new Vector3((maxX - 2) * GRID_SIZE, (maxY - 2) * GRID_SIZE, 0),
+        GameObject g = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
+        while(GetEntitiesAt(g.transform.position).Count > 1)
+            g = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
+        gameobjectTilesMobs.Add(Instantiate(PrefabEnemy_1, g.transform.position,
             Quaternion.identity, currentMap.transform));
         currentActors.Add(gameobjectTilesMobs.Last().GetComponent<Actor>());
     }
@@ -132,7 +137,7 @@ public class MapGenerator : MonoBehaviour
     {
         List<Entity> res = new List<Entity>();
         where.z = 1;
-        Ray r = new Ray(where, Vector3.forward);
+        Ray r = new Ray(where, Vector3.back);
         RaycastHit[] hit;
         hit = Physics.RaycastAll(r, 2);
         foreach (RaycastHit h in hit)
@@ -140,67 +145,8 @@ public class MapGenerator : MonoBehaviour
         return res;
     }
 
-    //Generate a random level
-    public void GenerateLevel(int level)
-    {
-        level = 1;
-        
-        currentMap = new GameObject("Map");
-        //Get a random dungeon file and read it
-        //int rand = (int)(UnityEngine.Random.value * (1));
-        string path = "Assets\\Favelas\\level" + level + "\\d" + 1 + ".json";
-        using (StreamReader r = new StreamReader(path))
-        {
-            string json = r.ReadToEnd();
-            JSONMap = JsonUtility.FromJson<GeneratedMapJSONContent>(json);
-        }
-        //Add the rectangles tiles
-        foreach (Tile tile in JSONMap.Blocks)
-        {
-            AddTile((tile.x), (tile.y), tile.tiletype);
-        }
-        //Add walls tiles : a base layer and then two more
-        //AddTilesWallsToMap(JSONMap.floors);
-        //Add trapdoor tile
-        //AddTileTrapDoor();
-        //Add player
-        //AddTilePlayer();
-        //Add the key
-        //AddTileKey();
-        //Add mobs
-        //Add items*/
-
-        //Make bool tilemap, convert negative numbers tiles positions to an array
-        //Calculate the size of the map and the negative offset
-        //The offset is the minimal number
-        //currentGridOffsetX = currentGridOffsetY = 0;
-        int maxX = 0, maxY = 0;
-        /*foreach (Tile t in JSONMap.walls)
-        {
-            if (t.x < currentGridOffsetX)
-                currentGridOffsetX = t.x;
-            if (t.y < currentGridOffsetY)
-                currentGridOffsetY = t.y;
-            if (t.x > maxX)
-                maxX = t.x;
-            if (t.y > maxY)
-                maxY = t.y;
-        }
-        currentGridOffsetX = Math.Abs(currentGridOffsetX);
-        currentGridOffsetY = Math.Abs(currentGridOffsetY);
-        //Create tilemap with size
-        tilesmap = new bool[(maxX + currentGridOffsetX) + 1, (maxY + currentGridOffsetY) + 1];
-        //Assign values
-        foreach (Tile t in JSONMap.floors)
-            tilesmap[(t.x + currentGridOffsetX), (t.y + currentGridOffsetY)] = true;
-        foreach (Tile t in JSONMap.walls)
-            tilesmap[(t.x + currentGridOffsetX), (t.y + currentGridOffsetY)] = false;
-        //Create grid
-        pathFindGrid = new NesScripts.Controls.PathFind.Grid(tilesmap);*/
-    }
-
     //Add walls all around the generated tiles----------------------------------
-    void AddTilesWallsToMap(List<Tile> target)
+   /* void AddTilesWallsToMap(List<Tile> target)
     {
         //Check the sides of all the floor tiles and put a wall where there isn't anything
         int cnt = target.Count;
@@ -254,23 +200,11 @@ public class MapGenerator : MonoBehaviour
             }
         }
     }
-
-    //Tiles adding function--------------------------------
-    void AddTileWall(int x, int y, MapTileTypes t)
-    {
-        gameobjectTilesWalls.Add(Instantiate(PrefabWall, new Vector3(x * GRID_SIZE, y * GRID_SIZE, 0),
-            Quaternion.identity, currentMap.transform));
-    }
-    void AddTileFloor(int x, int y, MapTileTypes t)
-    {
-        gameobjectTilesFloors.Add(Instantiate(PrefabFloor, new Vector3(x * GRID_SIZE, y * GRID_SIZE, 0),
-            Quaternion.identity, currentMap.transform));;
-    }
     void AddTileDoor(int x, int y, MapTileTypes t)
     {
         gameobjectTilesDoors.Add(Instantiate(PrefabDoor, new Vector3(x * GRID_SIZE, y * GRID_SIZE, 0),
             Quaternion.identity, currentMap.transform));
-    }
+    }*/
     /*void AddTileTrapDoor()
     {
         int trgt = (int)(UnityEngine.Random.value * JSONMap.floors.Count);

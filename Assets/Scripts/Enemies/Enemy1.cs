@@ -6,10 +6,16 @@ using UnityEngine;
 
 public class Enemy1 : Enemy
 {
-    private void Update()
+    public void Update()
     {
-        if (actionPoints > 0)
-            waitingActionsList.Add(new TurnAction(MakeMove, 100));
+        if (this.health > 0)
+            CallNextMove();
+    }
+
+    private void CallNextMove()
+    {
+        if (actionPoints > 0 && !isTurnFinished)
+            this.waitingAction = new TurnAction(MakeMove, 100);
     }
 
     public void MakeMove()
@@ -22,12 +28,14 @@ public class Enemy1 : Enemy
         RaycastHit hit;
         Vector3 dir = mapGenerator.mainPlayerGameobject.transform.position - transform.position;
         dir.Normalize();
-        if (Physics.Raycast(transform.position, dir, out hit, this.vision, layerMask))
+        bool hasTarget = false;
+        int tx, ty;
+        List<Point> tpath;
+        if (Physics.Raycast(transform.position, dir, out hit, this.vision * MapGenerator.GRID_SIZE, layerMask))
         {
-            int tx, ty;
-            List<Point> tpath;
             if (hit.transform.tag == "Player")
             {
+                hasTarget = true;
                 //Get player tile pos
                 tx = (int)Math.Round(mapGenerator.mainPlayerGameobject.transform.position.x / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minX);
                 ty = (int)Math.Round(mapGenerator.mainPlayerGameobject.transform.position.y / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minY);
@@ -46,19 +54,19 @@ public class Enemy1 : Enemy
                     mapGenerator.mainPlayerGameobject.GetComponent<Player>().health -= UnityEngine.Random.Range(minDamage, maxDamage + 1);
                 }
             }
-            else
-            {
-                //Roam around
-                int randx = UnityEngine.Random.Range(-1, 2);
-                int randy = UnityEngine.Random.Range(-1, 2);
-                tx = px + randx;
-                ty = py + randy;
-                tpath = Pathfinding.FindPath(this.mapGenerator.pathFindGrid,
-                    new Point(px, py), new Point(tx, ty));
-                if (tpath.Count > 0)
-                    StartCoroutine(MoveToPosition(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
-                        (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0), 0.2f));
-            }
+        }
+        if (!hasTarget)
+        {
+            //Roam around
+            int randx = UnityEngine.Random.Range(-1, 2);
+            int randy = UnityEngine.Random.Range(-1, 2);
+            tx = px + randx;
+            ty = py + randy;
+            tpath = Pathfinding.FindPath(this.mapGenerator.pathFindGrid,
+                new Point(px, py), new Point(tx, ty));
+            if (tpath.Count > 0)
+                StartCoroutine(MoveToPosition(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
+                    (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0), 0.2f));
         }
     }
 
