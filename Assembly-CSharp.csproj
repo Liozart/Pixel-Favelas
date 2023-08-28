@@ -56,26 +56,27 @@
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Base\Melee.cs" />
-    <Compile Include="Assets\Scripts\TurnManager.cs" />
-    <Compile Include="Assets\Scripts\Base\Actor.cs" />
-    <Compile Include="Assets\Scripts\TextEventGeneration.cs" />
-    <Compile Include="Assets\Scripts\Base\Entity.cs" />
-    <Compile Include="Assets\Scripts\LevelCreator.cs" />
+    <Compile Include="Assets\Scripts\Entities\Melee.cs" />
+    <Compile Include="Assets\Scripts\Managers\TurnManager.cs" />
+    <Compile Include="Assets\Scripts\Entities\Actor.cs" />
+    <Compile Include="Assets\Scripts\Managers\TextEventGeneration.cs" />
+    <Compile Include="Assets\Scripts\Entities\Entity.cs" />
+    <Compile Include="Assets\Scripts\Tools\LevelCreator.cs" />
     <Compile Include="Assets\Scripts\Items\Shiv.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\Node.cs" />
-    <Compile Include="Assets\Scripts\Base\Item.cs" />
+    <Compile Include="Assets\Scripts\Entities\Item.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\Grid.cs" />
-    <Compile Include="Assets\Scripts\Base\Gun.cs" />
-    <Compile Include="Assets\Scripts\TextFade.cs" />
+    <Compile Include="Assets\Scripts\Entities\Gun.cs" />
+    <Compile Include="Assets\Scripts\Managers\TextFade.cs" />
     <Compile Include="Assets\Scripts\Items\Makarov.cs" />
-    <Compile Include="Assets\Scripts\MapGenerator.cs" />
+    <Compile Include="Assets\Scripts\Managers\MapGenerator.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\Point.cs" />
     <Compile Include="Assets\Scripts\Enemies\Enemy1.cs" />
     <Compile Include="Assets\Scripts\2dTileBasedPathFinding\PathFinding.cs" />
-    <Compile Include="Assets\Scripts\Base\Player.cs" />
-    <Compile Include="Assets\Scripts\Base\Enemy.cs" />
-    <Compile Include="Assets\Scripts\Base\Block.cs" />
+    <Compile Include="Assets\Scripts\Entities\Player.cs" />
+    <Compile Include="Assets\Scripts\Entities\Enemy.cs" />
+    <Compile Include="Assets\Scripts\Entities\Block.cs" />
+    <Compile Include="Assets\Scripts\Managers\InventoryManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

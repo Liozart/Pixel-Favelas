@@ -36,8 +36,10 @@ public class Item : Entity
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<Collider>().enabled = false;
         if (e.actorType == ActorType.Player)
+        {
             ((Player)owner).RefreshMinActionCost();
-        textEventGen.AddTextEvent(this.entityName + " looté. " + this.entityDesc, EventTextType.Loot);
+            textEventGen.AddTextEvent(this.entityName + " looté. ", EventTextType.Loot);
+        }
     }
 
     public void Drop()

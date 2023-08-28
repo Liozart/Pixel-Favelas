@@ -18,6 +18,10 @@ public class Actor : Entity
     public int actionPoints;
     public int maxActionPoints;
     public int minActionCost;
+
+    [HideInInspector]
+    public List<Item> inventory = new List<Item>();
+
     [HideInInspector]
     public bool isTurnFinished;
     [HideInInspector]

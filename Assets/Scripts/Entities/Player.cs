@@ -28,8 +28,13 @@ public class Player : Actor
     public AudioClip audioClip_getKey;
     public AudioClip audioClip_getLoot;
 
-    //Stats
-    public List<Item> inventory = new List<Item>();
+    public Item equipmentGun;
+    public Item equipmentMelee;
+    public Item equipmentArmor;
+    public Item equipmentGadget1;
+    public Item equipmentGadget2;
+    public int inventorySize = 10;
+    public bool isInventoryOpen;
 
     //Current selected tile or object
     public GameObject selectedObject = null;
@@ -38,11 +43,7 @@ public class Player : Actor
     float delayBeforeAuto = 0;
 
     //UI
-    public TMP_Text healthText;
-    public TMP_Text speedText;
-    public TMP_Text APText;
-    public GameObject Equipped1;
-    public GameObject Equipped2;
+    InventoryManager inventoryManager;
 
     // Start is called before the first frame update
     void Start()
@@ -56,6 +57,7 @@ public class Player : Actor
         this.actionPoints = this.maxActionPoints = 100;
         this.minActionCost = moveSpeed;
         this.actorType = ActorType.Player;
+        isInventoryOpen = false;
         switch (playerType)
         {
             case PlayerClass.Base:
@@ -63,26 +65,24 @@ public class Player : Actor
                 break;
         }
         playerCamera = GameObject.FindGameObjectWithTag("MainCamera");
-        //Center camera on player
         playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, 3);
+
         //UI
-        healthText = GameObject.Find("HealthText").GetComponent<TMP_Text>();
-        speedText = GameObject.Find("SpeedText").GetComponent<TMP_Text>();
-        APText = GameObject.Find("APText").GetComponent<TMP_Text>();
-        Equipped1 = GameObject.Find("Equipped1");
-        Equipped1 = GameObject.Find("Equipped2");
+        inventoryManager = GameObject.FindGameObjectsWithTag("InvCanvas")[0].GetComponent<InventoryManager>();
+        inventoryManager.SetPlayer(this);
 
-        inventory.Add(Instantiate(mapGenerator.PrefabMakarov).GetComponent<Item>());
-        inventory[0].Loot(this);
-        inventory.Add(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
-        inventory[1].Loot(this);
+        //Base equipment
+        LootItem(Instantiate(mapGenerator.PrefabMakarov).GetComponent<Item>());
+        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
 
-        RefreshUI();
+        inventoryManager.RefreshUI();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isInventoryOpen) return;
+
         //Get player selection
         if (Input.GetMouseButtonDown((int)MouseButton.LeftMouse))
         {
@@ -143,15 +143,15 @@ public class Player : Actor
                             Actor m = CheckNextTile();
                             if (m != null)
                             {
-                                if (((Melee)inventory[1]).APCost <= actionPoints)
-                                    this.waitingAction = new TurnAction(((Melee)inventory[1]).Paquis, ((Melee)inventory[1]).APCost);
+                                if (((Melee)equipmentMelee).APCost <= actionPoints)
+                                    this.waitingAction = new TurnAction(((Melee)equipmentMelee).Paquis, ((Melee)equipmentMelee).APCost);
                                 else
                                     textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
                             }
                             else
                             {
-                                if (((Gun)inventory[0]).APCost <= actionPoints)
-                                    this.waitingAction = new TurnAction(((Gun)inventory[0]).Shoot, ((Gun)inventory[0]).APCost);
+                                if (((Gun)equipmentGun).APCost <= actionPoints)
+                                    this.waitingAction = new TurnAction(((Gun)equipmentGun).Shoot, ((Gun)equipmentGun).APCost);
                                 else
                                     textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
                             }
@@ -166,7 +166,7 @@ public class Player : Actor
             //Finish the turn
             if (waitingAction != null)
                 this.turnManager.Resolve();
-            RefreshUI();
+            inventoryManager.RefreshUI();
         }
 
         //Auto turn
@@ -219,25 +219,12 @@ public class Player : Actor
         }
     }
 
-    public void RefreshUI()
-    {
-        healthText.text = "Health : " + health.ToString();
-        speedText.text = "Speed :" + initiative.ToString();
-        APText.text = "AP :" + actionPoints.ToString();
-        //Equipped1.GetComponent<TMP_Text>().text = inventory[0].entityName;
-    }
-
-    public void ToggleInventory()
-    {
-        if (Equipped1.activeSelf)
-            Equipped1.SetActive(false);
-        else
-            Equipped1.SetActive(true);
-    }
-
     public void RefreshMinActionCost()
     {
-        minActionCost = inventory.OrderBy(i => i.APCost).First().APCost;
+        if (inventory.Count == 0)
+            minActionCost = 100;
+        else
+            minActionCost = inventory.OrderBy(i => i.APCost).First().APCost;
     }
 
     public Actor CheckNextTile()
@@ -269,8 +256,7 @@ public class Player : Actor
         {
             //Item
             case "Item":
-                other.gameObject.GetComponent<Item>().Loot(this);
-                inventory.Add(other.gameObject.GetComponent<Item>());
+                LootItem(other.gameObject.GetComponent<Item>());
                 break;
             //Open the door
             /*case "Door":
@@ -298,7 +284,52 @@ public class Player : Actor
                 }
                 break;*/
         }
-        RefreshUI();
+        inventoryManager.RefreshUI();
+    }
+
+    private void LootItem(Item item)
+    {
+        if (inventory.Count == inventorySize)
+        {
+            textEventGen.AddTextEvent("Inventaire plein.", EventTextType.Combat);
+        }
+        else
+        {
+            switch (item.itemType)
+            {
+                case ItemTypes.Gun:
+                    if (equipmentGun == null)
+                        equipmentGun = item;
+                    else
+                        inventory.Add(item);
+                    break;
+                case ItemTypes.Melee:
+                    if (equipmentMelee == null)
+                        equipmentMelee = item;
+                    else
+                        inventory.Add(item);
+                    break;
+                case ItemTypes.Armor:
+                    if (equipmentArmor == null)
+                        equipmentArmor = item;
+                    else
+                        inventory.Add(item);
+                    break;
+                case ItemTypes.Gadget:
+                    if (equipmentGadget1 == null) equipmentGadget1 = item;
+                    else
+                    {
+                        if (equipmentGadget2 == null) equipmentGadget2 = item;
+                        else
+                            inventory.Add(item);
+                    }
+                    break;
+                default:
+                    inventory.Add(item);
+                    break;
+            }
+            item.Loot(this);
+        }
     }
 
     public void Wait()

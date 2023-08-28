@@ -89,10 +89,12 @@ public class MapGenerator : MonoBehaviour
         mainPlayerGameobject = Instantiate(PrefabPlayer, pos.transform.position, Quaternion.identity, currentMap.transform);
         currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
 
-        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
-        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
-        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
         AddRandomOnFloor(PrefabMakarov, EntityType.Item);
+        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
+        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
+        AddRandomOnFloor(PrefabShiv, EntityType.Item);
+        AddRandomOnFloor(PrefabShiv, EntityType.Item);
+        AddRandomOnFloor(PrefabShiv, EntityType.Item);
     }
 
     public void AddTile(int x, int y, MapTileTypes tiletype)
