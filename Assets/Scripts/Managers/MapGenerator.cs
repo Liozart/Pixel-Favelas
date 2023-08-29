@@ -28,6 +28,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject PrefabPlayer;
     public GameObject PrefabEnemy_1;
     //Items prefabs
+    public GameObject PrefabFists;
     public GameObject PrefabMakarov;
     public GameObject PrefabShiv;
 
@@ -88,6 +89,12 @@ public class MapGenerator : MonoBehaviour
 
         mainPlayerGameobject = Instantiate(PrefabPlayer, pos.transform.position, Quaternion.identity, currentMap.transform);
         currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
+
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabShiv, EntityType.Item);
+        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
     }
 
     public void AddTile(int x, int y, MapTileTypes tiletype)

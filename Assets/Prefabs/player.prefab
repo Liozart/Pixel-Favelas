@@ -113,6 +113,8 @@ MonoBehaviour:
   actionPoints: 100
   maxActionPoints: 0
   minActionCost: 0
+  cover: 0
+  inventory: []
   isTurnFinished: 0
   actorType: 0
   turnManager: {fileID: 0}
@@ -126,14 +128,16 @@ MonoBehaviour:
   audioClip_openTrapDoor: {fileID: 0}
   audioClip_getKey: {fileID: 0}
   audioClip_getLoot: {fileID: 0}
-  inventory: []
+  equipmentGun: {fileID: 0}
+  equipmentMelee: {fileID: 0}
+  equipmentArmor: {fileID: 0}
+  equipmentGadget1: {fileID: 0}
+  equipmentGadget2: {fileID: 0}
+  inventorySize: 10
+  isInventoryOpen: 0
+  fistsGameobject: {fileID: 1858789194892819284, guid: 0ceda0f03a4f1154aacff9e2f7cf3f76, type: 3}
   selectedObject: {fileID: 0}
   delayBeforeAutoThresold: 1
-  healthText: {fileID: 0}
-  speedText: {fileID: 0}
-  APText: {fileID: 0}
-  Equipped1: {fileID: 0}
-  Equipped2: {fileID: 0}
 --- !u!65 &-7916438499145771538
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public enum ItemTypes
 {
-    Key, Gun, Melee, Armor, Grenade, Aid, Gadget
+    Melee, Gun, Armor, Grenade, Aid, Gadget, Key
 }
 
 public class Item : Entity

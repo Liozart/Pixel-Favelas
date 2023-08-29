@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public enum EnemyTypes
@@ -15,15 +16,24 @@ public class Enemy : Actor
     public int range;
     public int vision;
     public EnemyTypes enemyType;
+    public TMP_Text healthText;
+    public TMP_Text hitChanceText;
 
     public void Start()
     {
         this.actorType = ActorType.Enemy;
+        RefreshCover();
+        hitChanceText.transform.parent.gameObject.GetComponent<Canvas>().worldCamera = Camera.main;
     }
 
     public void Say()
     {
         this.textEventGen.AddTextEvent("Isso é chato", EventTextType.Combat);
+    }
+
+    public void RefreshCover()
+    {
+        
     }
 
     public void TakeDamage(int damage)

@@ -33,6 +33,7 @@ public class InventoryManager : MonoBehaviour
     public Button itemCancelButton;
 
     public Item selectedSlot;
+    public Fists FistsInstance;
 
     Player player;
 
@@ -115,9 +116,18 @@ public class InventoryManager : MonoBehaviour
                 SetDescriptionUI(false);
                 return;
             }
-            itemUseButton.GetComponentInChildren<TMP_Text>().text = "Unequip";
-            itemUseButton.onClick.AddListener(ItemUnequip);
-            itemDropButton.onClick.AddListener(ItemEquipmentDrop);
+            if (target.GetType() != typeof(Fists))
+            {
+                itemUseButton.GetComponentInChildren<TMP_Text>().text = "Unequip";
+                itemUseButton.onClick.AddListener(ItemUnequip);
+                itemDropButton.GetComponentInChildren<TMP_Text>().text = "Drop";
+                itemDropButton.onClick.AddListener(ItemEquipmentDrop);
+            }
+            else
+            {
+                itemUseButton.GetComponentInChildren<TMP_Text>().text = "";
+                itemDropButton.GetComponentInChildren<TMP_Text>().text = "";
+            }
         }
         else
         {
@@ -129,6 +139,7 @@ public class InventoryManager : MonoBehaviour
             }
             itemUseButton.GetComponentInChildren<TMP_Text>().text = "Equip";
             itemUseButton.onClick.AddListener(ItemEquip);
+            itemDropButton.GetComponentInChildren<TMP_Text>().text = "Drop";
             itemDropButton.onClick.AddListener(ItemDrop);
         }
 
@@ -150,12 +161,15 @@ public class InventoryManager : MonoBehaviour
             case ItemTypes.Gun: 
                 if (player.equipmentGun != null)
                     player.inventory.Add(player.equipmentGun); 
-                player.equipmentGun = selectedSlot; 
+                player.equipmentGun = (Gun)selectedSlot; 
                 break;
             case ItemTypes.Melee:
                 if (player.equipmentMelee != null)
-                    player.inventory.Add(player.equipmentMelee);
-                player.equipmentMelee = selectedSlot;
+                {
+                    if (player.equipmentMelee.GetType() != typeof(Fists))
+                        player.inventory.Add(player.equipmentMelee);
+                }
+                player.equipmentMelee = (Melee)selectedSlot;
                 break;
             case ItemTypes.Armor:
                 if (player.equipmentArmor != null)
@@ -185,7 +199,7 @@ public class InventoryManager : MonoBehaviour
         switch (selectedSlot.itemType)
         {
             case ItemTypes.Gun: player.equipmentGun = null; break;
-            case ItemTypes.Melee: player.equipmentMelee = null; break;
+            case ItemTypes.Melee: player.equipmentMelee = FistsInstance; break;
             case ItemTypes.Armor: player.equipmentArmor = null; break;
             case ItemTypes.Gadget:
                 if (player.equipmentGadget1 == selectedSlot)
@@ -225,7 +239,7 @@ public class InventoryManager : MonoBehaviour
         switch (selectedSlot.itemType)
         {
             case ItemTypes.Gun: player.equipmentGun = null; break;
-            case ItemTypes.Melee: player.equipmentMelee = null; break;
+            case ItemTypes.Melee: player.equipmentMelee = FistsInstance; break;
             case ItemTypes.Armor: player.equipmentArmor = null; break;
             case ItemTypes.Gadget:
                 if (player.equipmentGadget1 == selectedSlot)

@@ -18,6 +18,7 @@ public class Actor : Entity
     public int actionPoints;
     public int maxActionPoints;
     public int minActionCost;
+    public int cover;
 
     [HideInInspector]
     public List<Item> inventory = new List<Item>();

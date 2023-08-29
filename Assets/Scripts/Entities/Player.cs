@@ -20,7 +20,7 @@ public class Player : Actor
 
     //Camera
     GameObject playerCamera;
-    int zoomLevel = 3;
+    int zoomLevel = -4;
 
     //Audio
     public AudioClip audioClip_openDoor;
@@ -28,8 +28,8 @@ public class Player : Actor
     public AudioClip audioClip_getKey;
     public AudioClip audioClip_getLoot;
 
-    public Item equipmentGun;
-    public Item equipmentMelee;
+    public Gun equipmentGun;
+    public Melee equipmentMelee;
     public Item equipmentArmor;
     public Item equipmentGadget1;
     public Item equipmentGadget2;
@@ -56,6 +56,7 @@ public class Player : Actor
         this.moveSpeed = 100;
         this.actionPoints = this.maxActionPoints = 100;
         this.minActionCost = moveSpeed;
+        this.cover = 0;
         this.actorType = ActorType.Player;
         isInventoryOpen = false;
         switch (playerType)
@@ -65,20 +66,19 @@ public class Player : Actor
                 break;
         }
         playerCamera = GameObject.FindGameObjectWithTag("MainCamera");
-        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, 3);
+        playerCamera.transform.position = new Vector3(transform.position.x, transform.position.y, zoomLevel);
 
         //UI
         inventoryManager = GameObject.FindGameObjectsWithTag("InvCanvas")[0].GetComponent<InventoryManager>();
         inventoryManager.SetPlayer(this);
 
-        //Base equipment
-        LootItem(Instantiate(mapGenerator.PrefabMakarov).GetComponent<Item>());
-        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
-        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
-        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
-        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
-
+        //Fists
+        GameObject fist = Instantiate(mapGenerator.PrefabFists);
+        inventoryManager.FistsInstance = fist.GetComponent<Fists>();
+        LootItem(fist.GetComponent<Item>());
         inventoryManager.RefreshUI();
+
+        RefreshCover();
     }
 
     // Update is called once per frame
@@ -153,10 +153,13 @@ public class Player : Actor
                             }
                             else
                             {
-                                if (((Gun)equipmentGun).APCost <= actionPoints)
-                                    this.waitingAction = new TurnAction(((Gun)equipmentGun).Shoot, ((Gun)equipmentGun).APCost);
-                                else
-                                    textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                                if (equipmentMelee != null)
+                                {
+                                    if (((Gun)equipmentGun).APCost <= actionPoints)
+                                        this.waitingAction = new TurnAction(((Gun)equipmentGun).Shoot, ((Gun)equipmentGun).APCost);
+                                    else
+                                        textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                                }
                             }
                             break;
                 }
@@ -224,10 +227,30 @@ public class Player : Actor
 
     public void RefreshMinActionCost()
     {
-        if (inventory.Count == 0)
-            minActionCost = 100;
-        else
-            minActionCost = inventory.OrderBy(i => i.APCost).First().APCost;
+        minActionCost = 100;
+        if (equipmentGun != null)
+            if (equipmentGun.APCost < minActionCost)
+                minActionCost = equipmentGun.APCost;
+        if (equipmentMelee != null)
+            if (equipmentMelee.APCost < minActionCost)
+                minActionCost = equipmentMelee.APCost;
+        if (equipmentGadget1 != null)
+            if (equipmentGadget1.APCost < minActionCost)
+                minActionCost = equipmentGadget1.APCost;
+        if (equipmentGadget2 != null)
+            if (equipmentGadget2.APCost < minActionCost)
+                minActionCost = equipmentGadget2.APCost;
+        if (inventory.Count != 0)
+        {
+            int min = inventory.Min(i => i.APCost);
+            if (min < minActionCost)
+                minActionCost = min;
+        }
+    }
+
+    public void RefreshCover()
+    {
+
     }
 
     public Actor CheckNextTile()
@@ -302,13 +325,13 @@ public class Player : Actor
             {
                 case ItemTypes.Gun:
                     if (equipmentGun == null)
-                        equipmentGun = item;
+                        equipmentGun = (Gun)item;
                     else
                         inventory.Add(item);
                     break;
                 case ItemTypes.Melee:
-                    if (equipmentMelee == null)
-                        equipmentMelee = item;
+                    if (equipmentMelee == null || equipmentMelee.GetType() == typeof(Fists))
+                        equipmentMelee = (Melee)item;
                     else
                         inventory.Add(item);
                     break;
@@ -361,6 +384,7 @@ public class Player : Actor
         //Move toward the first point of the list
         StartCoroutine(MoveToPosition(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
             (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0), 0.2f));
+        RefreshCover();
     }
 
     public IEnumerator MoveToPosition(Vector3 end, float timeToGo)
