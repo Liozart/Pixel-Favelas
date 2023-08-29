@@ -74,6 +74,9 @@ public class Player : Actor
         //Base equipment
         LootItem(Instantiate(mapGenerator.PrefabMakarov).GetComponent<Item>());
         LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
+        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
+        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
+        LootItem(Instantiate(mapGenerator.PrefabShiv).GetComponent<Item>());
 
         inventoryManager.RefreshUI();
     }

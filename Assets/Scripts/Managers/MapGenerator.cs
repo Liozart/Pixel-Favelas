@@ -88,13 +88,6 @@ public class MapGenerator : MonoBehaviour
 
         mainPlayerGameobject = Instantiate(PrefabPlayer, pos.transform.position, Quaternion.identity, currentMap.transform);
         currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
-
-        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
-        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
-        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
-        AddRandomOnFloor(PrefabShiv, EntityType.Item);
-        AddRandomOnFloor(PrefabShiv, EntityType.Item);
-        AddRandomOnFloor(PrefabShiv, EntityType.Item);
     }
 
     public void AddTile(int x, int y, MapTileTypes tiletype)
@@ -140,6 +133,29 @@ public class MapGenerator : MonoBehaviour
         foreach (RaycastHit h in hit)
             res.Add(h.transform.GetComponent<Entity>());
         return res;
+    }
+
+    public Vector3 GetFreeTileAround(Vector3 pos)
+    {
+        List<Entity> tiles;
+        int tries = 0, max = 0;
+        while (tries < (Math.Abs(maxX) - (Math.Abs(minX)) + (Math.Abs(maxY) - Math.Abs(minY))))
+        {
+            max++;
+
+            for(float i = -(GRID_SIZE * max); i <= (GRID_SIZE * max); i += GRID_SIZE)
+            {
+                for (float j = -(GRID_SIZE * max); j <= (GRID_SIZE * max); j += GRID_SIZE)
+                {
+                    if (i == 0 && j == 0) continue;
+                    tiles = GetEntitiesAt(new Vector3(pos.x + i, pos.y + j, pos.z));
+                    if (tiles.Count != 1) continue;
+                    if (((Block)tiles[0]).blockType != BlockType.Floor) continue;
+                    return new Vector3(pos.x + i, pos.y + j, pos.z);
+                }
+            }
+        }
+        return pos;
     }
 
     //Add walls all around the generated tiles----------------------------------

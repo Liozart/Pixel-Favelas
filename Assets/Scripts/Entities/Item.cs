@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public enum ItemTypes
 {
@@ -49,8 +51,17 @@ public class Item : Entity
         audioSource.Play();
         GetComponent<SpriteRenderer>().enabled = true;
         GetComponent<Collider>().enabled = true;
+        transform.position = owner.transform.position;
         if (owner.actorType == ActorType.Player)
+        {
             ((Player)owner).RefreshMinActionCost();
+            //Drop next to the player
+            Vector3 pos = ((Player)owner).mapGenerator.GetFreeTileAround(transform.position);
+            if (pos == transform.position)
+                textEventGen.AddTextEvent("Pas de place pour lâcher ça.", EventTextType.Normal);
+            else
+                transform.position = pos;
+        }
         owner = null;
     }
 }

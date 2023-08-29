@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -13,14 +14,17 @@ public class InventoryManager : MonoBehaviour
     public TMP_Text initiativeText;
     public TMP_Text moveSpeedText;
     public TMP_Text APText;
-    public Canvas inventoryCanvas;
+
+    public GameObject inventoryCanvas;
+    List<Image> inventorySlots;
+    public Sprite EmptySlot;
     public Image equippedGun;
     public Image equippedMelee;
     public Image equippedArmor;
     public Image equippedGadget1;
     public Image equippedGadget2;
 
-    public Canvas descriptionCanvas;
+    public GameObject descriptionCanvas;
     public TMP_Text itemNameText;
     public TMP_Text itemDescriptionText;
     public Image itemSprite;
@@ -28,17 +32,14 @@ public class InventoryManager : MonoBehaviour
     public Button itemDropButton;
     public Button itemCancelButton;
 
-    List<Image> inventorySlots;
-    public Sprite EmptySlot;
-
     public Item selectedSlot;
 
     Player player;
 
     private void Start()
     {
-        inventoryCanvas.enabled = false;
-
+        SetInventoryUI(false);
+        SetDescriptionUI(false);
         inventorySlots = new List<Image>();
         for (int i = 0; i < inventoryCanvas.transform.childCount; i++)
         {
@@ -75,13 +76,30 @@ public class InventoryManager : MonoBehaviour
 
     public void ToggleInventory()
     {
-        inventoryCanvas.enabled = !inventoryCanvas.enabled;
         player.isInventoryOpen = !player.isInventoryOpen;
+        SetInventoryUI(player.isInventoryOpen);
+        if (!player.isInventoryOpen)
+            SetDescriptionUI(false);
+    }
+
+    public void SetInventoryUI(bool state)
+    {
+        for (int i = 0; i < inventoryCanvas.transform.childCount; i++)
+            inventoryCanvas.transform.GetChild(i).gameObject.SetActive(state);
+    }
+
+    public void SetDescriptionUI(bool state)
+    {
+        for (int i = 0; i < descriptionCanvas.transform.childCount; i++)
+            descriptionCanvas.transform.GetChild(i).gameObject.SetActive(state);
     }
 
     public void ItemClick(int id)
     {
+        if (!player.isInventoryOpen) return;
         Item target = null;
+        itemUseButton.onClick.RemoveAllListeners();
+        itemDropButton.onClick.RemoveAllListeners();
         if (id < 0)
         {
             switch (id)
@@ -92,50 +110,78 @@ public class InventoryManager : MonoBehaviour
                 case -4: target = player.equipmentGadget1; break;
                 case -5: target = player.equipmentGadget2; break;
             }
-            if (target == null) return;
+            if (target == null)
+            {
+                SetDescriptionUI(false);
+                return;
+            }
             itemUseButton.GetComponentInChildren<TMP_Text>().text = "Unequip";
             itemUseButton.onClick.AddListener(ItemUnequip);
             itemDropButton.onClick.AddListener(ItemEquipmentDrop);
         }
         else
         {
-            target = player.inventory[id];
-            if (target == null) return;
+            target = player.inventory.ElementAtOrDefault(id);
+            if (target == null)
+            {
+                SetDescriptionUI(false);
+                return;
+            }
             itemUseButton.GetComponentInChildren<TMP_Text>().text = "Equip";
             itemUseButton.onClick.AddListener(ItemEquip);
             itemDropButton.onClick.AddListener(ItemDrop);
         }
 
-        descriptionCanvas.enabled = true;
 
         itemNameText.text = target.entityName;
         itemDescriptionText.text = target.entityDesc;
         itemSprite.sprite = target.GetComponent<SpriteRenderer>().sprite;
+        SetDescriptionUI(true);
         selectedSlot = target;
     }
 
     public void ItemEquip()
     {
-        itemUseButton.onClick.RemoveListener(ItemEquip);
+        itemUseButton.onClick.RemoveAllListeners();
+        itemDropButton.onClick.RemoveAllListeners();
         player.inventory.Remove(selectedSlot);
         switch (selectedSlot.itemType)
         {
-            case ItemTypes.Gun: player.equipmentGun = selectedSlot; break;
-            case ItemTypes.Melee: player.equipmentMelee = selectedSlot; break;
-            case ItemTypes.Armor: player.equipmentArmor = selectedSlot; break;
+            case ItemTypes.Gun: 
+                if (player.equipmentGun != null)
+                    player.inventory.Add(player.equipmentGun); 
+                player.equipmentGun = selectedSlot; 
+                break;
+            case ItemTypes.Melee:
+                if (player.equipmentMelee != null)
+                    player.inventory.Add(player.equipmentMelee);
+                player.equipmentMelee = selectedSlot;
+                break;
+            case ItemTypes.Armor:
+                if (player.equipmentArmor != null)
+                    player.inventory.Add(player.equipmentArmor); 
+                player.equipmentArmor = selectedSlot; 
+                break;
             case ItemTypes.Gadget:
                 if (player.equipmentGadget1 == null)
                     player.equipmentGadget1 = selectedSlot;
-                else player.equipmentGadget2 = selectedSlot;
+                else
+                {
+                    if (player.equipmentGadget2 == null)
+                        player.inventory.Add(player.equipmentGadget2);
+                    player.equipmentGadget2 = selectedSlot;
+                }
             break;
         }
-        descriptionCanvas.enabled = false;
+        selectedSlot = null;
+        SetDescriptionUI(false);
         RefreshUI();
     }
 
     public void ItemUnequip()
     {
-        itemUseButton.onClick.RemoveListener(ItemUnequip);
+        itemUseButton.onClick.RemoveAllListeners();
+        itemDropButton.onClick.RemoveAllListeners();
         switch (selectedSlot.itemType)
         {
             case ItemTypes.Gun: player.equipmentGun = null; break;
@@ -149,7 +195,7 @@ public class InventoryManager : MonoBehaviour
         }
         player.inventory.Add(selectedSlot);
         selectedSlot = null;
-        descriptionCanvas.enabled = false;
+        SetDescriptionUI(false);
         RefreshUI();
     }
 
@@ -158,22 +204,24 @@ public class InventoryManager : MonoBehaviour
         itemUseButton.onClick.RemoveAllListeners();
         itemDropButton.onClick.RemoveAllListeners();
         selectedSlot = null;
-        descriptionCanvas.enabled = true;
+        SetDescriptionUI(false);
     }
 
     public void ItemDrop()
     {
-        itemDropButton.onClick.AddListener(ItemDrop);
+        itemUseButton.onClick.RemoveAllListeners();
+        itemDropButton.onClick.RemoveAllListeners();
         player.inventory.Remove(selectedSlot);
         selectedSlot.Drop();
         selectedSlot = null;
-        inventoryCanvas.enabled = false;
+        SetDescriptionUI(false);
         RefreshUI();
     }
 
     public void ItemEquipmentDrop()
     {
-        itemDropButton.onClick.AddListener(ItemEquipmentDrop);
+        itemUseButton.onClick.RemoveAllListeners();
+        itemDropButton.onClick.RemoveAllListeners();
         switch (selectedSlot.itemType)
         {
             case ItemTypes.Gun: player.equipmentGun = null; break;
@@ -187,7 +235,7 @@ public class InventoryManager : MonoBehaviour
         }
         selectedSlot.Drop();
         selectedSlot = null;
-        inventoryCanvas.enabled = false;
+        SetDescriptionUI(false);
         RefreshUI();
     }
 }
