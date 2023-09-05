@@ -22,10 +22,11 @@ public class Item : Entity
 
     public void Awake()
     {
-        textEventGen = GameObject.Find("Text Generator").GetComponent<TextEventGeneration>();
+        base.EntityStart();
         this.entityType = EntityType.Item;
-        this.selectionColor = Color.yellow;
         audioSource = gameObject.AddComponent<AudioSource>();
+        discoverState = DiscoverState.Unknown;
+        SetDiscoverState(discoverState, Vector3.zero);
     }
 
     public void Loot(Actor e)

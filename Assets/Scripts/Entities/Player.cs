@@ -6,6 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.Rendering.VirtualTexturing.Debugging;
 
 public enum PlayerClass
 {
@@ -27,6 +28,7 @@ public class Player : Actor
     public AudioClip audioClip_openTrapDoor;
     public AudioClip audioClip_getKey;
     public AudioClip audioClip_getLoot;
+    public List<AudioClip> audioClip_walk;
 
     public Gun equipmentGun;
     public Melee equipmentMelee;
@@ -38,6 +40,7 @@ public class Player : Actor
 
     //Current selected tile or object
     public GameObject selectedObject = null;
+    int wallLayerMask = 1 << 6;
     //Auto-play vars
     public float delayBeforeAutoThresold = 0.5f;
     float delayBeforeAuto = 0;
@@ -56,7 +59,8 @@ public class Player : Actor
         this.moveSpeed = 100;
         this.actionPoints = this.maxActionPoints = 100;
         this.minActionCost = moveSpeed;
-        this.cover = 0;
+        this.cover = 100;
+        this.vision = 6;
         this.actorType = ActorType.Player;
         isInventoryOpen = false;
         switch (playerType)
@@ -76,9 +80,11 @@ public class Player : Actor
         GameObject fist = Instantiate(mapGenerator.PrefabFists);
         inventoryManager.FistsInstance = fist.GetComponent<Fists>();
         LootItem(fist.GetComponent<Item>());
+        LootItem(Instantiate(mapGenerator.PrefabMakarov).GetComponent<Item>());
         inventoryManager.RefreshUI();
 
-        RefreshCover();
+        DiscoverAround(transform.position);
+        RefreshCover(transform.position);
     }
 
     // Update is called once per frame
@@ -123,51 +129,72 @@ public class Player : Actor
                     case "Trapdoor":
                     case "Door":
                     case "Item":
-                            if (selectedObject.transform.position == transform.position)
-                                this.waitingAction = new TurnAction(Wait, actionPoints);
+                        if (selectedObject.transform.position == transform.position)
+                            this.waitingAction = new TurnAction(Wait, actionPoints, null);
+                        else
+                        {
+                            Actor n = CheckNextTile();
+                            if (n != null)
+                            {
+                                textEventGen.AddTextEvent("Bloqué!", EventTextType.Skill);
+                                return;
+                            }
                             else
                             {
-                                Actor n = CheckNextTile();
-                                if (n != null)
-                                {
-                                        textEventGen.AddTextEvent("Bloqué!", EventTextType.Skill);
-                                        return;
-                                }
+                                if (moveSpeed <= actionPoints)
+                                    this.waitingAction = new TurnAction(Move, moveSpeed, null);
                                 else
-                                {
-                                    if (moveSpeed <= actionPoints)
-                                        this.waitingAction = new TurnAction(Move, moveSpeed);
-                                    else
-                                        textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
-                                }
+                                    textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
                             }
-                            break;
-                        case "Enemy":
-                            Actor m = CheckNextTile();
-                            if (m != null)
+                        }
+                        break;
+                    case "Enemy":
+                        Actor m = CheckNextTile();
+                        if (m != null)
+                        {
+                            if (equipmentMelee.APCost <= actionPoints)
+                                this.waitingAction = new TurnAction(equipmentMelee.Paquis, equipmentMelee.APCost, null);
+                            else
+                                textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
+                        }
+                        else
+                        {
+                            if (equipmentGun != null)
                             {
-                                if (((Melee)equipmentMelee).APCost <= actionPoints)
-                                    this.waitingAction = new TurnAction(((Melee)equipmentMelee).Paquis, ((Melee)equipmentMelee).APCost);
+                                if (equipmentGun.APCost <= actionPoints)
+                                    this.waitingAction = new TurnAction(equipmentGun.Shoot, equipmentGun.APCost, null);
                                 else
                                     textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
                             }
                             else
-                            {
-                                if (equipmentMelee != null)
-                                {
-                                    if (((Gun)equipmentGun).APCost <= actionPoints)
-                                        this.waitingAction = new TurnAction(((Gun)equipmentGun).Shoot, ((Gun)equipmentGun).APCost);
-                                    else
-                                        textEventGen.AddTextEvent("Pas assez d'AP", EventTextType.Skill);
-                                }
-                            }
-                            break;
+                                textEventGen.AddTextEvent("Pas d'arme à distance", EventTextType.Skill);
+                        }
+                        break;
+                    default:
+                        if (equipmentGun != null)
+                        {
+                            if (equipmentGun.APCost <= actionPoints && equipmentGun.currentAmmo < equipmentGun.ammoCapacity)
+                                this.waitingAction = new TurnAction(equipmentGun.Reload, equipmentGun.APCost, null);
+                            else
+                                this.waitingAction = new TurnAction(Wait, actionPoints, null);
+                        }
+                        else
+                            this.waitingAction = new TurnAction(Wait, actionPoints, null);
+                        break;
                 }
             }
             else
             {
                 //Wait
-                this.waitingAction = new TurnAction(Wait, actionPoints);
+                if (equipmentGun != null)
+                {
+                    if (equipmentGun.APCost <= actionPoints && equipmentGun.currentAmmo < equipmentGun.ammoCapacity)
+                        this.waitingAction = new TurnAction(equipmentGun.Reload, equipmentGun.APCost, null);
+                    else
+                        this.waitingAction = new TurnAction(Wait, actionPoints, null);
+                }
+                else
+                    this.waitingAction = new TurnAction(Wait, actionPoints, null);
             }
             //Finish the turn
             if (waitingAction != null)
@@ -248,9 +275,73 @@ public class Player : Actor
         }
     }
 
-    public void RefreshCover()
+    public void RefreshCover(Vector3 pos)
     {
 
+    }
+
+    internal void TakeDamage(int dam)
+    {
+        if (UnityEngine.Random.Range(0, 100) > this.cover)
+            this.textEventGen.AddTextEvent("Raté !", EventTextType.Combat);
+        else
+        {
+            health -= dam;
+            this.textEventGen.AddTextEvent(dam + " dégats subits.", EventTextType.Combat);
+            if (health <= 0)
+            {
+                this.audioSource.clip = this.deathSound;
+                this.audioSource.Play();
+                this.textEventGen.AddTextEvent("DEAD", EventTextType.Combat);
+            }
+        }
+    }
+
+    List<Entity> lastDiscoverEntites = new List<Entity>();
+    public void DiscoverAround(Vector3 pos)
+    {
+        int itemLayer = 1 << 6 | 1 << 8;
+        //Grey old viewed tiles
+        foreach (Entity c in lastDiscoverEntites)
+            try
+            {
+                c.SetDiscoverState(DiscoverState.Discovered, pos);
+            }
+            //handle destroyed ennemies
+            catch (MissingReferenceException) { }
+
+        lastDiscoverEntites.Clear();
+
+        //View player tile
+        Collider[] pl = Physics.OverlapSphere(pos, 0.05f);
+        foreach (Collider collider in pl)
+            collider.GetComponent<Entity>().SetDiscoverState(DiscoverState.InView, pos);
+
+        //Get entites in vision
+        List<RaycastHit[]> hits = new List<RaycastHit[]>();
+        for (float i = -1; i <= 1; i += 0.25f)
+            for (float j = -1; j <= 1; j += 0.25f)
+            {
+                hits.Add(Physics.RaycastAll(pos, new Vector3(i, j, 0), vision * MapGenerator.GRID_SIZE));
+                hits.Add(Physics.RaycastAll(pos, new Vector3(i, j, 0), vision * MapGenerator.GRID_SIZE, itemLayer));
+            }
+
+        bool walld;
+        foreach (RaycastHit[] c in hits)
+        {
+            walld = false;
+            foreach (RaycastHit r in c)
+            {
+                if (!walld)
+                {
+                    r.collider.GetComponent<Entity>().SetDiscoverState(DiscoverState.InView, pos);
+                    lastDiscoverEntites.Add(r.collider.GetComponent<Entity>());
+                }
+                if (r.collider.GetComponent<Entity>().entityType == EntityType.Block)
+                    if  (r.collider.GetComponent<Block>().blockType == BlockType.Wall)
+                        walld = true;
+            }
+        }
     }
 
     public Actor CheckNextTile()
@@ -282,33 +373,9 @@ public class Player : Actor
         {
             //Item
             case "Item":
-                LootItem(other.gameObject.GetComponent<Item>());
+                if (inventory.Count < inventorySize)
+                    LootItem(other.gameObject.GetComponent<Item>());
                 break;
-            //Open the door
-            /*case "Door":
-                //Play sound
-                audioSource.clip = audioClip_openDoor;
-                audioSource.Play();
-                //Remove door
-                Destroy(other.gameObject);
-                break;
-            //Door to next level
-            case "Trapdoor":
-                //If the key was aquired
-                foreach (Item t in inventory)
-                {
-                    if (t.itemType == ItemTypes.Key)
-                    {
-                        //Play sound
-                        audioSource.clip = audioClip_openTrapDoor;
-                        audioSource.Play();
-                        //Save player state
-                        turnManager.SavePlayerState(this);
-                        //Generate next level
-                        turnManager.GoToNextLevel();
-                    }
-                }
-                break;*/
         }
         inventoryManager.RefreshUI();
     }
@@ -360,6 +427,7 @@ public class Player : Actor
 
     public void Wait()
     {
+        DiscoverAround(transform.position);
         textEventGen.AddTextEvent("Attente", EventTextType.Normal);
     }
 
@@ -384,7 +452,14 @@ public class Player : Actor
         //Move toward the first point of the list
         StartCoroutine(MoveToPosition(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
             (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0), 0.2f));
-        RefreshCover();
+        
+        DiscoverAround(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE, 
+            (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0));
+        RefreshCover(new Vector3((tpath[0].x + mapGenerator.minX) * MapGenerator.GRID_SIZE,
+            (tpath[0].y + mapGenerator.minY) * MapGenerator.GRID_SIZE, 0));
+
+        audioSource.clip = audioClip_walk[UnityEngine.Random.Range(0, audioClip_walk.Count())];
+        audioSource.Play();
     }
 
     public IEnumerator MoveToPosition(Vector3 end, float timeToGo)

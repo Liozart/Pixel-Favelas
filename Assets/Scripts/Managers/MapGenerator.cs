@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 //Types of map tiles
 public enum MapTileTypes
 {
-    Floor, Wall, Door, Trapdoor, Table
+    Floor, Wall, Door, Trapdoor, Table, PlayerSpawn
 }
 
 public class MapGenerator : MonoBehaviour
@@ -29,8 +28,10 @@ public class MapGenerator : MonoBehaviour
     public GameObject PrefabEnemy_1;
     //Items prefabs
     public GameObject PrefabFists;
-    public GameObject PrefabMakarov;
     public GameObject PrefabShiv;
+    public GameObject PrefabMachete;
+    public GameObject PrefabMakarov;
+    public GameObject PrefabHK33;
 
     //JSON data of the map
     GeneratedMapJSONContent JSONMap;
@@ -83,18 +84,20 @@ public class MapGenerator : MonoBehaviour
         pathFindGrid = new NesScripts.Controls.PathFind.Grid(tilesmap);
         #endregion
 
-        GameObject pos = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
-        while (GetEntitiesAt(pos.transform.position).Count > 1)
-            pos = gameobjectTilesFloors[UnityEngine.Random.Range(0, gameobjectTilesFloors.Count)];
 
-        mainPlayerGameobject = Instantiate(PrefabPlayer, pos.transform.position, Quaternion.identity, currentMap.transform);
-        currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
-
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
+        AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
         AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
         AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
         AddRandomOnFloor(PrefabEnemy_1, EntityType.Actor);
         AddRandomOnFloor(PrefabShiv, EntityType.Item);
+        AddRandomOnFloor(PrefabShiv, EntityType.Item);
         AddRandomOnFloor(PrefabMakarov, EntityType.Item);
+        AddRandomOnFloor(PrefabMakarov, EntityType.Item);
+        AddRandomOnFloor(PrefabHK33, EntityType.Item);
+        AddRandomOnFloor(PrefabHK33, EntityType.Item);
+        AddRandomOnFloor(PrefabMachete, EntityType.Item);
+        AddRandomOnFloor(PrefabMachete, EntityType.Item);
     }
 
     public void AddTile(int x, int y, MapTileTypes tiletype)
@@ -107,7 +110,13 @@ public class MapGenerator : MonoBehaviour
                 break;
             case MapTileTypes.Floor:
                 gameobjectTilesFloors.Add(Instantiate(PrefabFloor, new Vector3(x * GRID_SIZE, y * GRID_SIZE, 0),
-                    Quaternion.identity, currentMap.transform)); ;
+                    Quaternion.identity, currentMap.transform));
+                break;
+            case MapTileTypes.PlayerSpawn:
+                gameobjectTilesFloors.Add(Instantiate(PrefabFloor, new Vector3(x * GRID_SIZE, y * GRID_SIZE, 0),
+                    Quaternion.identity, currentMap.transform));
+                mainPlayerGameobject = Instantiate(PrefabPlayer, new Vector3(x * GRID_SIZE, y * GRID_SIZE, 0), Quaternion.identity, currentMap.transform);
+                currentActors.Add(mainPlayerGameobject.GetComponent<Actor>());
                 break;
         }
     }

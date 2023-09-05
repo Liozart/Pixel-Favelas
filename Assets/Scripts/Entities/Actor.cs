@@ -19,6 +19,7 @@ public class Actor : Entity
     public int maxActionPoints;
     public int minActionCost;
     public int cover;
+    public int vision;
 
     [HideInInspector]
     public List<Item> inventory = new List<Item>();
@@ -42,12 +43,11 @@ public class Actor : Entity
 
     public void Awake()
     {
-        textEventGen = GameObject.Find("Text Generator").GetComponent<TextEventGeneration>();
+        base.EntityStart();
         this.entityType = EntityType.Actor;
         mapGenerator = GameObject.Find("Map Manager").GetComponent<MapGenerator>();
         turnManager = GameObject.Find("Turn Manager").GetComponent<TurnManager>();
         audioSource = GetComponent<AudioSource>();
-        this.selectionColor = Color.red;
         isTurnFinished = false;
     }
 
@@ -76,10 +76,12 @@ public class TurnAction
 {
     public Action action;
     public int AP;
+    List<object> Params;
 
-    public TurnAction(Action action, int aP)
+    public TurnAction(Action action, int aP, List<object> p)
     {
         this.action = action;
         this.AP = aP;
+        this.Params = p;
     }
 }

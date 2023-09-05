@@ -9,12 +9,6 @@ public class LevelCreator : MonoBehaviour
     public Grid grid;
     public Tilemap tilemap;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     public void CreateLevel()
     {
         List<Tile> tiles = new List<Tile>();
@@ -29,6 +23,7 @@ public class LevelCreator : MonoBehaviour
                     {
                         case "asphalt": t.tiletype = MapTileTypes.Floor; break;
                         case "brick": t.tiletype = MapTileTypes.Wall; break;
+                        case "playerstart": t.tiletype = MapTileTypes.PlayerSpawn; break;
                     }
                     tiles.Add(t);
                 }

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1086835178281124497}
   - component: {fileID: 6316307115653694848}
   - component: {fileID: 7992601147971742836}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: asphalt
   m_TagString: Floor
   m_Icon: {fileID: 0}
@@ -26,13 +26,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1086835178281124496}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1086835178281124497
 SpriteRenderer:
@@ -94,9 +94,17 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1086835178281124496}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 0.32, y: 0.32, z: 0.1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7992601147971742836
@@ -115,8 +123,10 @@ MonoBehaviour:
   posY: 0
   entityName: Asphalt
   entityDesc: Le sol.
+  selectionCanvasPrefab: {fileID: 8328870364150001054, guid: 0ec5353ad90efbb40a0276bc52261ad5, type: 3}
+  selectionCanvas: {fileID: 0}
   entityType: 0
-  selectionColor: {r: 0, g: 0, b: 0, a: 0}
+  discoverState: 0
   textEventGen: {fileID: 0}
   isDestroyed: 0
   blockType: 0

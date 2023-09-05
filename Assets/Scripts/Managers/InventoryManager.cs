@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
     //UI
+    public TMP_Text ammoText;
     public TMP_Text healthText;
     public TMP_Text initiativeText;
     public TMP_Text moveSpeedText;
@@ -27,6 +27,9 @@ public class InventoryManager : MonoBehaviour
     public GameObject descriptionCanvas;
     public TMP_Text itemNameText;
     public TMP_Text itemDescriptionText;
+    public TMP_Text itemDamageText;
+    public TMP_Text itemRangeText;
+    public TMP_Text itemAPCostText;
     public Image itemSprite;
     public Button itemUseButton;
     public Button itemDropButton;
@@ -60,7 +63,17 @@ public class InventoryManager : MonoBehaviour
         moveSpeedText.text = "Move speed : " + player.moveSpeed.ToString();
         APText.text = "AP : " + player.actionPoints.ToString();
 
-        equippedGun.sprite = player.equipmentGun != null ? player.equipmentGun.GetComponent<SpriteRenderer>().sprite : EmptySlot;
+        if (player.equipmentGun != null)
+        {
+            ammoText.text = "Ammo : " + player.equipmentGun.currentAmmo;
+            equippedGun.sprite = player.equipmentGun.GetComponent<SpriteRenderer>().sprite;
+        }
+        else
+        {
+            ammoText.text = "Ammo : 0";
+            equippedGun.sprite = EmptySlot;
+        }
+
         equippedMelee.sprite = player.equipmentMelee != null ? player.equipmentMelee.GetComponent<SpriteRenderer>().sprite : EmptySlot;
         equippedArmor.sprite = player.equipmentArmor != null ? player.equipmentArmor.GetComponent<SpriteRenderer>().sprite : EmptySlot;
         equippedGadget1.sprite = player.equipmentGadget1 != null ? player.equipmentGadget1.GetComponent<SpriteRenderer>().sprite : EmptySlot;
@@ -99,6 +112,8 @@ public class InventoryManager : MonoBehaviour
     {
         if (!player.isInventoryOpen) return;
         Item target = null;
+        itemDamageText.text = "";
+        itemRangeText.text = "";
         itemUseButton.onClick.RemoveAllListeners();
         itemDropButton.onClick.RemoveAllListeners();
         if (id < 0)
@@ -143,10 +158,24 @@ public class InventoryManager : MonoBehaviour
             itemDropButton.onClick.AddListener(ItemDrop);
         }
 
-
         itemNameText.text = target.entityName;
         itemDescriptionText.text = target.entityDesc;
         itemSprite.sprite = target.GetComponent<SpriteRenderer>().sprite;
+        itemAPCostText.text = "AP cost : " + target.APCost.ToString();
+        switch (target.itemType)
+        {
+            case ItemTypes.Gun:
+                itemDamageText.text = "Damage : " + ((Gun)target).MinDamage + " - " + ((Gun)target).MaxDamage;
+                itemRangeText.text = "Max range : " + ((Gun)target).MaxRange + ", optimal : " + ((Gun)target).optiRange;
+                break;
+            case ItemTypes.Melee:
+                itemDamageText.text = "Damage : " + ((Melee)target).MinDamage + " - " + ((Melee)target).MaxDamage;
+                break;
+            case ItemTypes.Aid:
+                itemDamageText.text = "Heal : ";
+                break;
+        }
+
         SetDescriptionUI(true);
         selectedSlot = target;
     }

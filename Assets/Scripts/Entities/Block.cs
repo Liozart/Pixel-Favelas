@@ -6,7 +6,6 @@ public enum BlockType
 {
     Floor, Wall, Door, Trapdoor, Table
 }
-
 public class Block : Entity
 {
     public bool isDestroyed;
@@ -14,9 +13,10 @@ public class Block : Entity
 
     public void Awake()
     {
+        base.EntityStart();
         this.entityType = EntityType.Block;
-        textEventGen = GameObject.Find("Text Generator").GetComponent<TextEventGeneration>();
         isDestroyed = false;
-        this.selectionColor = Color.green;
+        discoverState = DiscoverState.Unknown;
+        SetDiscoverState(discoverState, Vector3.zero);
     }
 }

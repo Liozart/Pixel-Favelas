@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class Enemy1 : Enemy
 {
+    bool isPlayerInSight;
+
     public void Update()
     {
         if (this.health > 0)
@@ -15,12 +17,12 @@ public class Enemy1 : Enemy
     private void CallNextMove()
     {
         if (actionPoints > 0 && !isTurnFinished)
-            this.waitingAction = new TurnAction(MakeMove, 100);
+            this.waitingAction = new TurnAction(MakeMove, 100, null);
     }
 
     public void MakeMove()
     {
-        int layerMask = 1 << 6;
+        int floorLayer = 1 << 7;
         //Get mob tile pos
         int px = (int)Math.Round(transform.position.x / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minX);
         int py = (int)Math.Round(transform.position.y / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minY);
@@ -31,11 +33,12 @@ public class Enemy1 : Enemy
         bool hasTarget = false;
         int tx, ty;
         List<Point> tpath;
-        if (Physics.Raycast(transform.position, dir, out hit, this.vision * MapGenerator.GRID_SIZE, layerMask))
+        if (Physics.Raycast(transform.position, dir, out hit, this.vision * MapGenerator.GRID_SIZE, ~floorLayer))
         {
             if (hit.transform.tag == "Player")
             {
                 hasTarget = true;
+                hasTargetText.text = "!";
                 //Get player tile pos
                 tx = (int)Math.Round(mapGenerator.mainPlayerGameobject.transform.position.x / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minX);
                 ty = (int)Math.Round(mapGenerator.mainPlayerGameobject.transform.position.y / MapGenerator.GRID_SIZE) + Math.Abs(mapGenerator.minY);
@@ -51,12 +54,16 @@ public class Enemy1 : Enemy
                 {
                     this.audioSource.clip = this.attackSound;
                     this.audioSource.Play();
-                    mapGenerator.mainPlayerGameobject.GetComponent<Player>().health -= UnityEngine.Random.Range(minDamage, maxDamage + 1);
+                    if (UnityEngine.Random.Range(1, tpath.Count + 1) == 1)
+                        mapGenerator.mainPlayerGameobject.GetComponent<Player>().TakeDamage(UnityEngine.Random.Range(minDamage, maxDamage + 1));
+                    else
+                        textEventGen.AddTextEvent(this.entityName + " rate.", EventTextType.Combat);
                 }
             }
         }
         if (!hasTarget)
         {
+            hasTargetText.text = "";
             //Roam around
             int randx = UnityEngine.Random.Range(-1, 2);
             int randy = UnityEngine.Random.Range(-1, 2);
@@ -81,5 +88,6 @@ public class Enemy1 : Enemy
             yield return null;
         }
         transform.position = end;
+        RefreshCover(mapGenerator.mainPlayerGameobject.transform.position);
     }
 }
